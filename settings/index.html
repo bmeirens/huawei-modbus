@@ -60,6 +60,11 @@
         });
 
         saveElement.addEventListener("click", function (e) {
+          if(!checkIp(hostElement.value))
+          {
+            return Homey.alert(Homey.__("settings.invalidip"));
+          }
+
           Homey.set("modbushost", hostElement.value, function (err) {
             if (err) return Homey.alert(err);
           });
@@ -69,8 +74,23 @@
           Homey.set("modbusunitid", unitElement.value, function (err) {
             if (err) return Homey.alert(err);
           });
+
+          Homey.log('Huawei Modbus TCP has been configured');
+          Homey.log('Huawei Modbus host ' + hostElement.value);
+          Homey.log('Huawei Modbus port ' + portElement.value);
+          Homey.log('Huawei Modbus unit id ' + unitElement.value);
+
+          Homey.ready();
         });
       }
+
+      function checkIp(ip) {
+        const ipv4 = 
+            /^(\d{1,3}\.){3}\d{1,3}$/;
+        const ipv6 = 
+            /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+        return ipv4.test(ip) || ipv6.test(ip);
+    }
     </script>
   </body>
 </html>
