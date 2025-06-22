@@ -3,14 +3,19 @@
   "version": "1.0.0",
   "compatibility": ">=5.0.0",
   "sdk": 3,
+  "brandColor": "#1F9EE3",
   "platforms": [
     "local"
   ],
   "name": {
-    "en": "Huawei Modbus TCP"
+    "en": "Huawei Modbus TCP",
+    "nl": "Huawei Modbus TCP",
+    "es": "Huawei Modbus TCP"
   },
   "description": {
-    "en": "Adds support for Huawei Inverters and Batteries over Modbus TCP"
+    "en": "Adds support for Huawei Inverters and Batteries over Modbus TCP",
+    "nl": "Voegt ondersteuning voor Huawei Omvormers en Batterijen toe over Modbus TCP",
+    "es": "Añade soporte para Invertores y Baterías Huawei por Modbus TCP"
   },
   "category": [
     "energy"
