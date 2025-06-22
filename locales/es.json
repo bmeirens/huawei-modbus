@@ -1,0 +1,12 @@
+{
+    "settings": {
+      "title": "Huawei Modbus TCP Configuración",
+      "subtitle": "Por favor, entre los detalles de connección",
+      "grouptitle": "Configuración Modbus TCP",
+      "host": "Equipo",
+      "port": "Puerta",
+      "unit": "Número de unidad",
+      "save": "Guardar cambios",
+      "invalidip": "La dirrección de equipo no es valida."
+    }
+  }

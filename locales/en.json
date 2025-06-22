@@ -6,6 +6,7 @@
       "host": "Host",
       "port": "Port",
       "unit": "Unit ID",
-      "save": "Save changes"
+      "save": "Save changes",
+      "invalidip": "The entered ip address is not valid."
     }
   }

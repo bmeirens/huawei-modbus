@@ -6,6 +6,7 @@
       "host": "Host",
       "port": "Poort",
       "unit": "Unit ID",
-      "save": "Wijzigingen opslaan"
+      "save": "Wijzigingen opslaan",
+      "invalidip": "Het ingegeven ip address is niet geldig."
     }
   }
