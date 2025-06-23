@@ -7,6 +7,9 @@ module.exports = class InverterDevice extends Homey.Device {
    */
   async onInit() {
     this.log('InverterDevice has been initialized');
+
+    const settings = this.getSettings();
+    console.log("Inverter was configured for " + settings.mode);
   }
 
   /**

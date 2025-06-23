@@ -172,5 +172,35 @@
       "id": "add_my_devices",
       "template": "add_devices"
     }
+  ],
+  "settings": [
+    {
+      "id": "mode",
+      "type": "dropdown",
+      "value": "1phase",
+      "label": { 
+        "en": "Supported phases",
+        "nl": "Ondersteunde fases",
+        "es": "Fases soportadas"
+      },
+      "values": [
+        {
+          "id": "1phase",
+          "label": { 
+            "en": "1 Phase",
+            "nl": "1 Fase",
+            "es": "1 Fase"
+          }
+        },
+        {
+          "id": "3phase",
+          "label": { 
+            "en": "3 Phase",
+            "nl": "3 Fases",
+            "es": "3 Fases"
+          }
+        }
+      ]
+    }
   ]
 }
