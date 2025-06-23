@@ -220,8 +220,7 @@
       ],
       "images": {
         "small": "/drivers/inverter/assets/images/small.png",
-        "large": "/drivers/inverter/assets/images/large.png",
-        "xlarge": "/drivers/inverter/assets/images/xlarge.png"
+        "large": "/drivers/inverter/assets/images/large.png"
       },
       "pair": [
         {
