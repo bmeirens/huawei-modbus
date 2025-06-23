@@ -18,16 +18,16 @@
       <legend class="homey-form-legend" data-i18n="settings.grouptitle">Modbus TCP Settings</legend>
 
       <div class="homey-form-group">
-        <label class="homey-form-label" for="host" data-i18n="settings.host">Host</label>
+        <label class="homey-form-label" for="host" data-i18n="settings.host" placeholder="0.0.0.0" required>Host</label>
         <input class="homey-form-input" id="host" type="text" value="" />
       </div>
       <div class="homey-form-group">
         <label class="homey-form-label" for="port" data-i18n="settings.port">Port</label>
-        <input class="homey-form-input" id="port" type="number" value="502" />
+        <input class="homey-form-input" id="port" type="number" placeholder="502" value="502" required />
       </div>
       <div class="homey-form-group"></div>
         <label class="homey-form-label" for="unit" data-i18n="settings.unit">Unit ID</label>
-        <input class="homey-form-input" id="unit" type="number" value="1" />
+        <input class="homey-form-input" id="unit" type="number" placeholder="1" value="1" required />
       </div>
     </fieldset>
 

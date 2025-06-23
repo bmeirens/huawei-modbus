@@ -1,12 +1,12 @@
 import Homey from 'homey';
 
-module.exports = class MyDriver extends Homey.Driver {
+module.exports = class InverterDriver extends Homey.Driver {
 
   /**
    * onInit is called when the driver is initialized.
    */
   async onInit() {
-    this.log('MyDriver has been initialized');
+    this.log('InverterDriver has been initialized');
   }
 
   /**
@@ -14,18 +14,16 @@ module.exports = class MyDriver extends Homey.Driver {
    * This should return an array with the data of devices that are available for pairing.
    */
   async onPairListDevices() {
+    //get the first sample of data from modbus to make sure we can actually connect...
+    //if this fails, we should have a way to not proceed
+    var deviceId = Math.random().toString(36).substr(2, 5).toLowerCase();
     return [
-      // Example device data, note that `store` is optional
-      // {
-      //   name: 'My Device',
-      //   data: {
-      //     id: 'my-device',
-      //   },
-      //   store: {
-      //     address: '127.0.0.1',
-      //   },
-      // },
+       {
+         name: 'Inverter',
+         data: {
+           id: deviceId,
+         }
+       }
     ];
   }
-
 };

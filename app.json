@@ -30,5 +30,213 @@
   "author": {
     "name": "Bart Meirens",
     "email": "bart.meirens@gmail.com"
-  }
+  },
+  "tags": {
+    "en": [
+      "inverter",
+      "solar panels",
+      "modbus",
+      "battery",
+      "huawei"
+    ],
+    "nl": [
+      "omvormer",
+      "zonnepanelen",
+      "modbus",
+      "batterij",
+      "huawei"
+    ],
+    "es": [
+      "invertidor",
+      "places solares",
+      "modbus",
+      "batería",
+      "huawei"
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/bmeirens/huawei-modbus/issues"
+  },
+  "drivers": [
+    {
+      "name": {
+        "en": "Huawei Inverter",
+        "nl": "Huawei Omvormer",
+        "es": "Invertor Huawei"
+      },
+      "class": "solarpanel",
+      "capabilities": [
+        "measure_power",
+        "measure_power.active_power",
+        "measure_current.phase1",
+        "measure_current.phase2",
+        "measure_current.phase3",
+        "measure_voltage.phase1",
+        "measure_voltage.phase2",
+        "measure_voltage.phase3",
+        "measure_temperature.invertor",
+        "meter_power",
+        "meter_power.daily",
+        "measure_voltage",
+        "measure_voltage.pv1",
+        "measure_voltage.pv2",
+        "measure_current.pv1",
+        "measure_current.pv2"
+      ],
+      "capabilitiesOptions": {
+        "measure_power": {
+          "decimals": 0,
+          "title": {
+            "en": "Solar Power",
+            "nl": "Zonnestroom",
+            "es": "Potencia Solar"
+          }
+        },
+        "measure_power.active_power": {
+          "decimals": 0,
+          "title": {
+            "en": "Active Power",
+            "nl": "Actieve Stroom",
+            "es": "Potencia Activa"
+          }
+        },
+        "measure_current.phase1": {
+          "title": {
+            "en": "AC Current phase 1",
+            "nl": "AC Stroom fase 1",
+            "es": "Corriente AC fase 1"
+          }
+        },
+        "measure_current.phase2": {
+          "title": {
+            "en": "AC Current phase 2",
+            "nl": "AC Stroom fase 2",
+            "es": "Corriente AC fase 2"
+          }
+        },
+        "measure_current.phase3": {
+          "title": {
+            "en": "AC Current phase 3",
+            "nl": "AC Stroom fase 3",
+            "es": "Corriente AC fase 3"
+          }
+        },
+        "measure_current.pv1": {
+          "title": {
+            "en": "AC Current pv 1",
+            "nl": "AC Stroom pv 1",
+            "es": "Corriente AC pv 1"
+          }
+        },
+        "measure_current.pv2": {
+          "title": {
+            "en": "AC Current pv 2",
+            "nl": "AC Stroom pv 2",
+            "es": "Corriente AC pv 2"
+          }
+        },
+        "measure_voltage": {
+          "title": {
+            "en": "Voltage",
+            "nl": "Spanning",
+            "es": "Tensión"
+          }
+        },
+        "measure_voltage.phase1": {
+          "title": {
+            "en": "Voltage phase 1",
+            "nl": "Spanning fase 1",
+            "es": "Tensión fase 1"
+          }
+        },
+        "measure_voltage.phase2": {
+          "title": {
+            "en": "Voltage phase 2",
+            "nl": "Spanning fase 2",
+            "es": "Tensión fase 2"
+          }
+        },
+        "measure_voltage.phase3": {
+          "title": {
+            "en": "Voltage phase 3",
+            "nl": "Spanning fase 3",
+            "es": "Tensión fase 3"
+          }
+        },
+        "measure_voltage.pv1": {
+          "title": {
+            "en": "Voltage pv 1",
+            "nl": "Spanning pv 1",
+            "es": "Tensión pv 1"
+          }
+        },
+        "measure_voltage.pv2": {
+          "title": {
+            "en": "Voltage pv 2",
+            "nl": "Spanning pv 2",
+            "es": "Tensión pv 2"
+          }
+        },
+        "measure_temperature.invertor": {
+          "title": {
+            "en": "Heatsink temperature",
+            "nl": "Heatsink temperatuur",
+            "es": "Temperatura del disipador de calor"
+          },
+          "decimals": 2
+        },
+        "meter_power": {
+          "title": {
+            "en": "Total Yield",
+            "nl": "Totale opbrengst",
+            "es": "Producción total"
+          },
+          "decimals": 2
+        },
+        "meter_power.daily": {
+          "title": {
+            "en": "Total Day Yield",
+            "nl": "Totale dag opbrengst",
+            "es": "Producción total del día"
+          },
+          "decimals": 2
+        },
+        "inverter_status": {
+          "title": {
+            "en": "Inverter status",
+            "nl": "Omvormerstatus",
+            "es": "Estado del invertor"
+          }
+        }
+      },
+      "energy": {
+        "meterPowerExportedCapability": "meter_power"
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "lan"
+      ],
+      "images": {
+        "small": "/drivers/inverter/assets/images/small.png",
+        "large": "/drivers/inverter/assets/images/large.png",
+        "xlarge": "/drivers/inverter/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "list_my_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_my_devices"
+          }
+        },
+        {
+          "id": "add_my_devices",
+          "template": "add_devices"
+        }
+      ],
+      "id": "inverter"
+    }
+  ]
 }

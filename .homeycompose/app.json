@@ -29,5 +29,31 @@
   "author": {
     "name": "Bart Meirens",
     "email": "bart.meirens@gmail.com"
+  },
+  "tags": {
+    "en": [
+      "inverter",
+      "solar panels",
+      "modbus",
+      "battery",
+      "huawei"
+    ],
+    "nl": [
+      "omvormer",
+      "zonnepanelen",
+      "modbus",
+      "batterij",
+      "huawei"
+    ],
+    "es": [
+      "invertidor",
+      "places solares",
+      "modbus",
+      "batería",
+      "huawei"
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/bmeirens/huawei-modbus/issues"
   }
 }
