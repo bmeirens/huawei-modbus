@@ -15,7 +15,9 @@ module.exports = class InverterDriver extends Homey.Driver {
    */
   async onPairListDevices() {
     //get the first sample of data from modbus to make sure we can actually connect...
-    //if this fails, we should have a way to not proceed
+    //We'll try to map inverter properties
+    //if this fails, we should return an empty collection
+
     var deviceId = Math.random().toString(36).substring(2, 5).toLowerCase();
     return [
        {

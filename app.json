@@ -14,9 +14,9 @@
     "es": "Huawei Modbus TCP"
   },
   "description": {
-    "en": "Adds support for Huawei Inverters and Batteries over Modbus TCP",
-    "nl": "Voegt ondersteuning voor Huawei Omvormers en Batterijen toe over Modbus TCP",
-    "es": "Añade soporte para Invertores y Baterías Huawei por Modbus TCP"
+    "en": "Track energy generated and stored",
+    "nl": "Volg gegenereerde en opgeslagen energie",
+    "es": "Sigue energía generada y guardada"
   },
   "category": [
     "energy"

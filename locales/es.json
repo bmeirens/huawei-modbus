@@ -1,7 +1,5 @@
 {
     "settings": {
-      "title": "Huawei Modbus TCP Configuración",
-      "subtitle": "Por favor, entre los detalles de connección",
       "grouptitle": "Configuración Modbus TCP",
       "host": "Equipo",
       "port": "Puerta",

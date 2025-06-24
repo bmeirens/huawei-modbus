@@ -1,7 +1,5 @@
 {
     "settings": {
-      "title": "Huawei Modbus TCP Settings Page",
-      "subtitle": "Please fill in the connection details",
       "grouptitle": "Modbus TCP Settings",
       "host": "Host",
       "port": "Port",
