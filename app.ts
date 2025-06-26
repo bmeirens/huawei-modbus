@@ -81,12 +81,18 @@ module.exports = class MyApp extends Homey.App {
           this.clientSettings.host = this.homey.settings.get(HOST_KEY);
           break;
         case PORT_KEY:
-          this.clientSettings.port = this.homey.settings.get(PORT_KEY);
+          this.clientSettings.port = this.toWholeNumber(this.homey.settings.get(PORT_KEY));
           break;
         case UNIT_KEY:
-          this.clientSettings.unitId = this.homey.settings.get(UNIT_KEY);
+          this.clientSettings.unitId = this.toWholeNumber(this.homey.settings.get(UNIT_KEY));
           break;
       }
+  }
+
+  private toWholeNumber(x: any): number{
+    var result = Number(x);
+
+    return result >= 0 ? Math.floor(result): Math.ceil(result);
   }
 
   private clearSetting(key: string) {
