@@ -84,31 +84,31 @@ class Registers
     };
     batteryRegisters : Object = {
         ratedCapacity: new Entry(37758, 2, UINT32_TYPE, 'Rated Capacity', 'Wh'),
-        batterySOC: new Entry(37760, 1, UINT16_TYPE, 'Battery SOC', '%'),
+        batterySOC: new Entry(37760, 1, UINT16_TYPE, 'Battery SOC', '%', 10),
         deviceStatus: new Entry(37762, 1, UINT16_TYPE, 'Device Status', ''),//0 offline, 1 standby, 2 running, 3 fault, 4 sleep
-        busVoltage: new Entry(37763, 1, UINT16_TYPE, 'Bus Voltage', 'V'),
-        busCurrent: new Entry(37764, 1, INT16_TYPE, 'Bus Current', 'A'),
+        busVoltage: new Entry(37763, 1, UINT16_TYPE, 'Bus Voltage', 'V', 10),
+        busCurrent: new Entry(37764, 1, INT16_TYPE, 'Bus Current', 'A', 10),
         chargeDischargePower: new Entry(37765, 2, INT32_TYPE, 'Charge / Discharge Power', 'W'),
-        totalCharge: new Entry(37780, 2, UINT32_TYPE, 'Total Charge', 'kWh'),
-        totalDischarge: new Entry(37782, 2, UINT32_TYPE, 'Total Discharge', 'kWh'),
-        currentDayCharged: new Entry(37784, 2, UINT32_TYPE, 'Charged Today', 'kWh'),
-        currentDayDischarged: new Entry(37786, 2, UINT32_TYPE, 'Discharged Today', 'kWh'),
+        totalCharge: new Entry(37780, 2, UINT32_TYPE, 'Total Charge', 'kWh', 100),
+        totalDischarge: new Entry(37782, 2, UINT32_TYPE, 'Total Discharge', 'kWh', 100),
+        currentDayCharged: new Entry(37784, 2, UINT32_TYPE, 'Charged Today', 'kWh', 100),
+        currentDayDischarged: new Entry(37786, 2, UINT32_TYPE, 'Discharged Today', 'kWh', 100),
         maximumChargePower: new Entry(37046, 2, UINT32_TYPE, 'Maximum Charge Power', 'W'),
         maximumDischargePower: new Entry(37048, 2, UINT32_TYPE, 'Maximum Discharge Power', 'W'),        
     };
     meterRegisters: Object=  {
-        gridVoltagePhaseA: new Entry(37101, 2, INT32_TYPE, 'Grid Phase A Voltage', 'V'),
-        gridVoltagePhaseB: new Entry(37103, 2, INT32_TYPE, 'Grid Phase B Voltage', 'V'),
-        gridVoltagePhaseC: new Entry(37105, 2, INT32_TYPE, 'Grid Phase C Voltage', 'V'),
-        gridCurrentPhaseA: new Entry(37107, 2, INT32_TYPE, 'Grid Phase A Current', 'A'),
-        gridCurrentPhaseB: new Entry(37109, 2, INT32_TYPE, 'Grid Phase B Current', 'A'),
-        gridCurrentPhaseC: new Entry(37111, 2, INT32_TYPE, 'Grid Phase C Current', 'A'),
+        gridVoltagePhaseA: new Entry(37101, 2, INT32_TYPE, 'Grid Phase A Voltage', 'V', 10),
+        gridVoltagePhaseB: new Entry(37103, 2, INT32_TYPE, 'Grid Phase B Voltage', 'V', 10),
+        gridVoltagePhaseC: new Entry(37105, 2, INT32_TYPE, 'Grid Phase C Voltage', 'V', 10),
+        gridCurrentPhaseA: new Entry(37107, 2, INT32_TYPE, 'Grid Phase A Current', 'A', 100),
+        gridCurrentPhaseB: new Entry(37109, 2, INT32_TYPE, 'Grid Phase B Current', 'A', 100),
+        gridCurrentPhaseC: new Entry(37111, 2, INT32_TYPE, 'Grid Phase C Current', 'A', 100),
         activePower: new Entry(37113, 2, INT32_TYPE, 'Active Power', 'W'),//positive to grid ; negative from grid
-        gridFrequency: new Entry(37118, 1, INT16_TYPE, 'Grid Frequency', 'Hz'),
-        gridExportedEnergy: new Entry(37119, 2, INT32_TYPE, 'Grid Exported Energy', 'kWh'),
-        gridImportedEnergy: new Entry(37121, 2, INT32_TYPE, 'Grid Imported Energy', 'kWh'),
+        gridFrequency: new Entry(37118, 1, INT16_TYPE, 'Grid Frequency', 'Hz', 100),
+        gridExportedEnergy: new Entry(37119, 2, INT32_TYPE, 'Grid Exported Energy', 'kWh', 100),
+        gridImportedEnergy: new Entry(37121, 2, INT32_TYPE, 'Grid Imported Energy', 'kWh', 100),
         activePowerPhaseA: new Entry(37132, 2, INT32_TYPE, 'Grid Phase A Active Power', 'W'),
-        activePowerPhaseB: new Entry(37133, 2, INT32_TYPE, 'Grid Phase B Active Power', 'W'),
+        activePowerPhaseB: new Entry(37134, 2, INT32_TYPE, 'Grid Phase B Active Power', 'W'),
         activePowerPhaseC: new Entry(37136, 2, INT32_TYPE, 'Grid Phase C Active Power', 'W')
     };
 }
@@ -235,13 +235,15 @@ export default class ModbusClient{
 
             //TODO: get all values for inverter, battery and meter
             await this.checkRegisters(this.registers.inverterRegisters, client);
+            await this.checkRegisters(this.registers.meterRegisters, client);
+            await this.checkRegisters(this.registers.batteryRegisters, client);
 
             console.log('disconnect');
 
             client.socket.end();
             socket.end();
 
-            //TODO: pass the results onto any ractive observers
+            //TODO: pass the results onto any reactive observers as key value pairs [string, string]
 
             const endTime = new Date();
             const timeDiff = endTime.getTime() - startTime.getTime();
@@ -316,7 +318,7 @@ export default class ModbusClient{
                     break;
                 }
 
-                console.log(response.body);
+                //console.log(response.body);
                 if(resultValue && resultValue !== undefined && resultValue !== 'xxx')
                 {
                     entry.updateMeasurement(resultValue);
