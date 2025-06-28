@@ -128,13 +128,13 @@ export class ModbusClientSettings{
         this.unitId = unitId;
     }
 
-    public IsValid(): boolean {
+    public isValid(): boolean {
         if(this.host == EMPTY_IP || this.host == '')
         {
             return false;
         }
         
-        if(!this.checkIp(this.host))
+        if(!this._checkIp(this.host))
         {
             return false;
         }
@@ -148,7 +148,12 @@ export class ModbusClientSettings{
         return true;
     }
 
-    private checkIp(ip: string) : boolean {
+    public toClientKey() : string {
+        return `${this.host}-${this.port}-${this.unitId}`;
+    
+    }
+
+    private _checkIp(ip: string) : boolean {
         const ipv4 = 
             /^(\d{1,3}\.){3}\d{1,3}$/;
         const ipv6 = 
@@ -162,7 +167,7 @@ export default class ModbusClient{
   settings: ModbusClientSettings;
   registers: Registers;
 
-    private static instance: ModbusClient | undefined;
+    private static _instance: ModbusClient | undefined;
 
     private constructor(settings: ModbusClientSettings) {
         // Private constructor to prevent direct instances
@@ -171,40 +176,40 @@ export default class ModbusClient{
 
         this.timer = setInterval(() => {
             // poll state from modbus
-            this.poll();
+            this._poll();
         }, CALL_INTERVAL);
 
-        this.poll();
+        this._poll();
     }
 
-    public static HasValue() : boolean {
-        if(ModbusClient.instance)
+    public static hasValue() : boolean {
+        if(ModbusClient._instance)
             return true;
         
         return false;
     }
 
     public static getInstance(settings?: ModbusClientSettings): ModbusClient {
-        if(!ModbusClient.instance)
+        if(!ModbusClient._instance)
         {
             if(!settings) 
                 throw new Error("ModbusClient getInstance was called without settings while no instance was created yet.");
 
-            if(!settings.IsValid())
+            if(!settings.isValid())
                 throw new Error("ModbusClient getInstance was called with invalid or empty settings while no instance was created yet.");
 
-            ModbusClient.instance = new ModbusClient(settings)
+            ModbusClient._instance = new ModbusClient(settings)
         }
 
-        return ModbusClient.instance;
+        return ModbusClient._instance;
     }
 
-    public Registers(section: string): string {
+    public getRegisters(section: string): string {
         console.log(`Retrival of registers for section ${section}`);
         return section;
     }
 
-    private async poll(): Promise<void>{
+    private async _poll(): Promise<void>{
         console.log('polling....');
 
         const modbusOptions = {
@@ -231,12 +236,12 @@ export default class ModbusClient{
             console.log(modbusOptions);
             const startTime = new Date();
 
-            await this.delay(DELAY_AFTER_CONNECTION_ESTABLISHED);
+            await this._delay(DELAY_AFTER_CONNECTION_ESTABLISHED);
 
             //TODO: get all values for inverter, battery and meter
-            await this.checkRegisters(this.registers.inverterRegisters, client);
-            await this.checkRegisters(this.registers.meterRegisters, client);
-            await this.checkRegisters(this.registers.batteryRegisters, client);
+            await this._checkRegisters(this.registers.inverterRegisters, client);
+            await this._checkRegisters(this.registers.meterRegisters, client);
+            await this._checkRegisters(this.registers.batteryRegisters, client);
 
             console.log('disconnect');
 
@@ -280,14 +285,14 @@ export default class ModbusClient{
         }
     }
 
-    private delay(ms: any) {
+    private _delay(ms: any) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    private async checkRegisters(registers: Object, client: InstanceType<typeof Modbus.client.TCP>): Promise<void>{
+    private async _checkRegisters(registers: Object, client: InstanceType<typeof Modbus.client.TCP>): Promise<void>{
         for (const [key, entry] of Object.entries(registers)) {
              
-            await this.delay(DELAY_BETWEEN_REGISTER_READS);
+            await this._delay(DELAY_BETWEEN_REGISTER_READS);
 
             try {
                 console.log(`Fetching ${key} with start ${entry.start} and length ${entry.length}`);

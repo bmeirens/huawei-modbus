@@ -17,24 +17,24 @@ module.exports = class MyApp extends Homey.App {
     this.log('Starting initialization of the Huawei Modbus TCP App.');
 
     //load all parts of the settings into the modbusclient settings to use
-    this.loadSetting(HOST_KEY);
-    this.loadSetting(PORT_KEY);
-    this.loadSetting(UNIT_KEY);
+    this._loadSetting(HOST_KEY);
+    this._loadSetting(PORT_KEY);
+    this._loadSetting(UNIT_KEY);
 
     this.log('Loading settings complete');
 
     this.homey.settings.addListener('set', (key: string) => {
-      this.loadSetting(key);
-      this.initializeClient();
+      this._loadSetting(key);
+      this._initializeClient();
     });
 
     this.homey.settings.addListener('unset', (key: string) => {
-      this.clearSetting(key);
-      this.initializeClient();
+      this._clearSetting(key);
+      this._initializeClient();
     });
 
     this.log('Initializing client');
-    this.initializeClient();
+    this._initializeClient();
 
     this.log('The Huawei Modbus TCP App has been initialized');
   }
@@ -49,9 +49,9 @@ module.exports = class MyApp extends Homey.App {
     }
   }
 
-  private initializeClient(){
+  private _initializeClient(){
     try {
-      if(ModbusClient.HasValue()) {
+      if(ModbusClient.hasValue()) {
         this.log('Disposing of previous client instance, probably after re-configuration.');
 
         var client = ModbusClient.getInstance();
@@ -62,7 +62,7 @@ module.exports = class MyApp extends Homey.App {
       this.log(error);
     }
 
-    if(this.clientSettings.IsValid())
+    if(this.clientSettings.isValid())
     {
       //start the client
       var _ = ModbusClient.getInstance(this.clientSettings);
@@ -73,7 +73,7 @@ module.exports = class MyApp extends Homey.App {
     }
   }
 
-  private loadSetting(key: string){
+  private _loadSetting(key: string){
     this.log(`Loading settings for key ${key}`);
 
     switch(key){
@@ -81,21 +81,21 @@ module.exports = class MyApp extends Homey.App {
           this.clientSettings.host = this.homey.settings.get(HOST_KEY);
           break;
         case PORT_KEY:
-          this.clientSettings.port = this.toWholeNumber(this.homey.settings.get(PORT_KEY));
+          this.clientSettings.port = this._toWholeNumber(this.homey.settings.get(PORT_KEY));
           break;
         case UNIT_KEY:
-          this.clientSettings.unitId = this.toWholeNumber(this.homey.settings.get(UNIT_KEY));
+          this.clientSettings.unitId = this._toWholeNumber(this.homey.settings.get(UNIT_KEY));
           break;
       }
   }
 
-  private toWholeNumber(x: any): number{
+  private _toWholeNumber(x: any): number{
     var result = Number(x);
 
     return result >= 0 ? Math.floor(result): Math.ceil(result);
   }
 
-  private clearSetting(key: string) {
+  private _clearSetting(key: string) {
     this.log(`Unloading settings for key ${key}`);
 
     switch(key){
