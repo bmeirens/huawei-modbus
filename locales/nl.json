@@ -6,5 +6,15 @@
       "unit": "Unit ID",
       "save": "Wijzigingen opslaan",
       "invalidip": "Het ingegeven ip address is niet geldig."
+    },
+    "pair": {
+      "title_inverter": "Instellingen Omvormer",
+      "subtitle_inverter": "Geef de verbindingsgegevens voor uw omvormer in.",
+      "error_invalidSettings": "De instellingen zijn niet geldig.",
+      "error_connectionFailed": "Er kon geen verbinding gemaakt worden. Gelieve de instellingen na te kijken.",
+      "host": "Host",
+      "port": "Poort",
+      "unit": "Unit ID",
+      "connect": "Verbinden"
     }
   }

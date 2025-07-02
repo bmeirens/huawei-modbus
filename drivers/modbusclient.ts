@@ -57,6 +57,7 @@ class Registers
 {
     inverterRegisters: Object = {
         modelName: new Entry(30000, 15, STRING_TYPE, 'Model Name', ''),
+        serialNumber: new Entry(30015, 10, STRING_TYPE, 'Serial Number', ''),
         pvStringsCount: new Entry(30071, 1, UINT16_TYPE, 'Number of PV Strings', ''),
         ratedPower: new Entry(30073, 2, UINT32_TYPE, 'Rated Power', 'kW', 1000),
         pv1Voltage: new Entry(32016, 1, INT16_TYPE, 'PV1 Voltage', 'V', 10),
@@ -149,8 +150,7 @@ export class ModbusClientSettings{
     }
 
     public toClientKey() : string {
-        return `${this.host}-${this.port}-${this.unitId}`;
-    
+       return `${this.host}:${this.port}/${this.unitId}`;
     }
 
     private _checkIp(ip: string) : boolean {
@@ -167,7 +167,7 @@ export default class ModbusClient{
   settings: ModbusClientSettings;
   registers: Registers;
 
-    private static _instance: ModbusClient | undefined;
+    private static _instances = new Map<string, ModbusClient>();
 
     private constructor(settings: ModbusClientSettings) {
         // Private constructor to prevent direct instances
@@ -182,26 +182,71 @@ export default class ModbusClient{
         this._poll();
     }
 
-    public static hasValue() : boolean {
-        if(ModbusClient._instance)
-            return true;
+    public static async canConnect(settings: ModbusClientSettings) : Promise<boolean> {
+        if(!settings.isValid())
+            return false;
+
+        var modbusOptions = ModbusClient._createConnectionOptions(settings, 'Huawei Modbus Client');
+
+        const socket = new net.Socket();
+        const unitID = settings.unitId;
+
+        console.log('Testing connection...');
         
+        socket.setKeepAlive(false);
+        socket.connect(modbusOptions);
+
+        socket.on('connect', async () => {
+            console.log('Connection test succeeded');
+
+            socket.end();
+
+            return true;
+        });
+
+        socket.on('timeout', async () => {
+            console.log('socket timed out');
+
+            socket.end();
+        });
+
+        socket.on('error', async (err) => {
+            console.log('connection error');
+            console.log(err);
+
+            socket.end();
+        });
+
         return false;
     }
 
-    public static getInstance(settings?: ModbusClientSettings): ModbusClient {
-        if(!ModbusClient._instance)
-        {
-            if(!settings) 
-                throw new Error("ModbusClient getInstance was called without settings while no instance was created yet.");
+    public static getInstance(settings: ModbusClientSettings): ModbusClient {
+        const clientKey = settings.toClientKey();
 
+        if(!ModbusClient._instances.has(clientKey))
+        {
             if(!settings.isValid())
                 throw new Error("ModbusClient getInstance was called with invalid or empty settings while no instance was created yet.");
 
-            ModbusClient._instance = new ModbusClient(settings)
+            ModbusClient._instances.set(clientKey, new ModbusClient(settings));
         }
 
-        return ModbusClient._instance;
+        var result = ModbusClient._instances.get(clientKey);
+
+        if (result === undefined) {
+            throw new Error(`No client instance registered for key ${clientKey}`);
+        }
+
+        return result;
+    }
+
+    public static disposeInstances(){
+        ModbusClient._instances.forEach(
+            (v: ModbusClient, k: string, m: Map<string, ModbusClient>) => { 
+                console.log(`Tearing down instance with key ${k}`);
+                v.teardown();
+                m.delete(k);
+            });
     }
 
     public getRegisters(section: string): string {
@@ -209,19 +254,26 @@ export default class ModbusClient{
         return section;
     }
 
-    private async _poll(): Promise<void>{
-        console.log('polling....');
-
+    private static _createConnectionOptions(settings: ModbusClientSettings, label: string) {
         const modbusOptions = {
-            host: this.settings.host,
-            port: this.settings.port,
-            unitId: this.settings.unitId,
+            host: settings.host,
+            port: settings.port,
+            unitId: settings.unitId,
             timeout: CONNECTION_TIMEOUT,
             autoReconnect: false,
-            logLabel: 'Huawei Inverter',
+            logLabel: label,
             logLevel: 'error',
             logEnabled: true,
         };
+
+        return modbusOptions;
+    }
+
+
+    private async _poll(): Promise<void>{
+        console.log('polling....');
+
+        var modbusOptions = ModbusClient._createConnectionOptions(this.settings, 'Huawei Modbus Client');
 
         const socket = new net.Socket();
         const unitID = this.settings.unitId;
@@ -269,6 +321,7 @@ export default class ModbusClient{
         });
 
         socket.on('error', (err) => {
+            console.log('connection error');
             console.log(err);
 
             client.socket.end();

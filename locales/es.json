@@ -6,5 +6,15 @@
       "unit": "Número de unidad",
       "save": "Guardar cambios",
       "invalidip": "La dirrección de equipo no es valida."
+    },
+    "pair": {
+      "title_inverter": "Configuración del Inversor",
+      "subtitle_inverter": "Entre los detalles de connección de vuestro inversor.",
+      "error_invalidSettings": "La configuración no es valida.",
+      "error_connectionFailed": "No se pudo realizer la connección. Por favor revise la configuración.",
+      "host": "Equipo",
+      "port": "Puerta",
+      "unit": "Número de unidad",
+      "connect": "Connectar"
     }
   }

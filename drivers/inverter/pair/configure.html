@@ -1,0 +1,74 @@
+<script type="text/javascript">
+  Homey.setTitle(__('pair.title_inverter'));
+
+  $(function () {
+    $('#connect').click(async function () {
+
+      Homey.showLoadingOverlay();
+
+      const response = await Homey.emit('test_connection', 
+      {
+        host: $('#host').val(),
+        port: $('#port').val(),
+        unitId: $('#unit').val()
+      });
+
+      Homey.hideLoadingOverlay();
+
+      console.log('Response:', response);
+      if (! response.success) {
+        Homey.alert(response.error);
+        return;
+      }
+
+      var deviceId = response.deviceId;
+
+      var device_data = {
+        id: deviceId,
+      };
+
+      var settings = {
+        host: $('#host').val(), 
+        port: $('#port').val(), 
+        unitId: $('#unit').val()
+      };
+
+      Homey.addDevice(
+        {
+            name: deviceId,
+            data: device_data,
+            settings: {
+                host: $('#host').val(), 
+                port: $('#port').val(), 
+                unitId: $('#unit').val()
+            }
+        },
+        function (error, result) {
+        if (error) {
+            Homey.alert(error.message || error.toString());
+        }
+
+        Homey.done();
+        }
+      );
+
+    });
+  });
+</script>
+
+<p data-i18n="pair.subtitle_inverter">Enter the connection details for your inverter.</p>
+<fieldset class="homey-form-fieldset">
+    <div class="homey-form-group">
+    <label class="homey-form-label" for="host" data-i18n="pair.host">Host</label>
+    <input class="homey-form-input" id="host" type="text" value="" placeholder="0.0.0.0" required />
+    </div>
+    <div class="homey-form-group">
+    <label class="homey-form-label" for="port" data-i18n="pair.port">Port</label>
+    <input class="homey-form-input" id="port" type="number" placeholder="502" value="502" required />
+    </div>
+    <div class="homey-form-group"></div>
+    <label class="homey-form-label" for="unit" data-i18n="pair.unit">Unit ID</label>
+    <input class="homey-form-input" id="unit" type="number" placeholder="1" value="1" required />
+    </div>
+</fieldset>
+<button id="connect" type="button" class="homey-button-primary-full" data-i18n="pair.connect">Connect</button>

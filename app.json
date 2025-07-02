@@ -47,7 +47,7 @@
       "huawei"
     ],
     "es": [
-      "invertidor",
+      "inversor",
       "places solares",
       "modbus",
       "batería",
@@ -62,7 +62,7 @@
       "name": {
         "en": "Huawei Inverter",
         "nl": "Huawei Omvormer",
-        "es": "Invertor Huawei"
+        "es": "Inversor Huawei"
       },
       "class": "solarpanel",
       "capabilities": [
@@ -205,7 +205,7 @@
           "title": {
             "en": "Inverter status",
             "nl": "Omvormerstatus",
-            "es": "Estado del invertor"
+            "es": "Estado del inversor"
           }
         }
       },
@@ -224,42 +224,52 @@
       },
       "pair": [
         {
-          "id": "list_my_devices",
-          "template": "list_devices",
-          "navigation": {
-            "next": "add_my_devices"
-          }
-        },
-        {
-          "id": "add_my_devices",
-          "template": "add_devices"
+          "id": "configure"
         }
       ],
       "settings": [
         {
-          "id": "mode",
-          "type": "dropdown",
-          "value": "1phase",
+          "type": "group",
           "label": {
-            "en": "Supported phases",
-            "nl": "Ondersteunde fases",
-            "es": "Fases soportadas"
+            "en": "Inverter settings",
+            "nl": "Instellingen omvormer",
+            "es": "Configuración del inversor"
           },
-          "values": [
+          "children": [
             {
-              "id": "1phase",
+              "id": "host",
+              "type": "text",
+              "value": "0.0.0.0",
               "label": {
-                "en": "1 Phase",
-                "nl": "1 Fase",
-                "es": "1 Fase"
+                "en": "Host",
+                "nl": "Host ",
+                "es": "Equipo"
               }
             },
             {
-              "id": "3phase",
+              "id": "port",
+              "type": "number",
+              "value": 1502,
+              "step": 1,
               "label": {
-                "en": "3 Phase",
-                "nl": "3 Fases",
-                "es": "3 Fases"
+                "en": "Port",
+                "nl": "Poort",
+                "es": "Puerta"
+              }
+            },
+            {
+              "id": "unitId",
+              "type": "number",
+              "value": 1,
+              "step": 1,
+              "attr": {
+                "min": 0,
+                "max": 50
+              },
+              "label": {
+                "en": "Unit ID",
+                "nl": "Unit ID",
+                "es": "Número de unidad"
               }
             }
           ]

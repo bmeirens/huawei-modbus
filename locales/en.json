@@ -6,5 +6,15 @@
       "unit": "Unit ID",
       "save": "Save changes",
       "invalidip": "The entered ip address is not valid."
+    },
+    "pair": {
+      "title_inverter": "Inverter Settings",
+      "subtitle_inverter": "Enter the connection details for your inverter.",
+      "error_invalidSettings": "The settings are invalid.",
+      "error_connectionFailed": "No connection could be made. Please verify the settings.",
+      "host": "Host",
+      "port": "Port",
+      "unit": "Unit ID",
+      "connect": "Connect"
     }
   }
