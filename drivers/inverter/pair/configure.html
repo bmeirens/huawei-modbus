@@ -22,26 +22,15 @@
       }
 
       var deviceId = response.deviceId;
-
-      var device_data = {
-        id: deviceId,
-      };
-
-      var settings = {
-        host: $('#host').val(), 
-        port: $('#port').val(), 
-        unitId: $('#unit').val()
-      };
+      var deviceSetting = response.deviceSettings;
 
       Homey.addDevice(
         {
             name: deviceId,
-            data: device_data,
-            settings: {
-                host: $('#host').val(), 
-                port: $('#port').val(), 
-                unitId: $('#unit').val()
-            }
+            data: {
+              id: deviceId,
+            },
+            settings: deviceSettings
         },
         function (error, result) {
         if (error) {

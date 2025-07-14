@@ -12,6 +12,7 @@
       "subtitle_inverter": "Entre los detalles de connección de vuestro inversor.",
       "error_invalidSettings": "La configuración no es valida.",
       "error_connectionFailed": "No se pudo realizer la connección. Por favor revise la configuración.",
+      "error_noSerial": "No se encontró un número de serie en las medidas.",
       "host": "Equipo",
       "port": "Puerta",
       "unit": "Número de unidad",

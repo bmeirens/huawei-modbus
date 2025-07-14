@@ -12,6 +12,7 @@
       "subtitle_inverter": "Geef de verbindingsgegevens voor uw omvormer in.",
       "error_invalidSettings": "De instellingen zijn niet geldig.",
       "error_connectionFailed": "Er kon geen verbinding gemaakt worden. Gelieve de instellingen na te kijken.",
+      "error_noSerial": "Er werd geen serianummer gevonden in de metingen.",
       "host": "Host",
       "port": "Poort",
       "unit": "Unit ID",

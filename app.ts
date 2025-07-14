@@ -1,11 +1,9 @@
 'use strict';
 
 import Homey from 'homey';
-//import ModbusClient, { ModbusClientSettings } from './drivers/modbusclient';
-import ModbusClient from './drivers/modbusclient';
+import ModbusClient from './drivers/modbusClient';
 
 module.exports = class MyApp extends Homey.App {
-  //clientSettings: ModbusClientSettings = ModbusClientSettings.Empty();
 
   /**
    * onInit is called when the app is initialized.

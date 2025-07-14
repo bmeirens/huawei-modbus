@@ -249,7 +249,7 @@
             {
               "id": "port",
               "type": "number",
-              "value": 1502,
+              "value": 502,
               "step": 1,
               "label": {
                 "en": "Port",

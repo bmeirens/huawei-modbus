@@ -12,6 +12,7 @@
       "subtitle_inverter": "Enter the connection details for your inverter.",
       "error_invalidSettings": "The settings are invalid.",
       "error_connectionFailed": "No connection could be made. Please verify the settings.",
+      "error_noSerial": "No serial number was found in the readings.",
       "host": "Host",
       "port": "Port",
       "unit": "Unit ID",

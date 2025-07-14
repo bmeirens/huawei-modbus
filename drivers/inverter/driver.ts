@@ -1,5 +1,8 @@
 import Homey from 'homey';
-import ModbusClient, { ModbusClientSettings } from '../modbusclient';
+import ModbusClient from '../modbusClient';
+import ModbusClientSettings from '../modbusClientSettings';
+import Utilities from '../utilities';
+import Constants from '../constants';
 
 module.exports = class InverterDriver extends Homey.Driver {
 
@@ -14,21 +17,21 @@ module.exports = class InverterDriver extends Homey.Driver {
    * onPairListDevices is called when a user is adding a device and the 'list_devices' view is called.
    * This should return an array with the data of devices that are available for pairing.
    */
-  async onPairListDevices() {
-    //get the first sample of data from modbus to make sure we can actually connect...
-    //We'll try to map inverter properties
-    //if this fails, we should return an empty collection
+  // async onPairListDevices() {
+  //   //get the first sample of data from modbus to make sure we can actually connect...
+  //   //We'll try to map inverter properties
+  //   //if this fails, we should return an empty collection
 
-    var deviceId = Math.random().toString(36).substring(2, 5).toLowerCase();
-    return [
-       {
-         name: 'Inverter',
-         data: {
-           id: deviceId,
-         }
-       }
-    ];
-  }
+  //   var deviceId = Math.random().toString(36).substring(2, 5).toLowerCase();
+  //   return [
+  //      {
+  //        name: 'Inverter',
+  //        data: {
+  //          id: deviceId,
+  //        }
+  //      }
+  //   ];
+  // }
 
   async onPair(session: Homey.Driver.PairSession): Promise<void> {
     let myHomey = this.homey;
@@ -37,7 +40,7 @@ module.exports = class InverterDriver extends Homey.Driver {
         // data is { 'host': '[ip]', 'port': [port], 'unitId': [unitId] }
 
         //create client settings, validate them
-        var clientSettings = new ModbusClientSettings(data.host, me._toWholeNumber(data.port), me._toWholeNumber(data.unitId));
+        var clientSettings = new ModbusClientSettings(data.host, Utilities.toWholeNumber(data.port), Utilities.toWholeNumber(data.unitId));
 
         if(!clientSettings.isValid())
         {
@@ -56,16 +59,21 @@ module.exports = class InverterDriver extends Homey.Driver {
       //Attempt to read the registers at that address
       var client = ModbusClient.getInstance(clientSettings);
 
-      var registers = client.getRegisters('inverter');
+      var registers = client.getRegisters(Constants.inverterReadingsKey);
+
+      if(!registers.has(Constants.serialNumber))
+      {
+        return { success: false, error: myHomey.__('pair.error_noSerial')};
+      }
+
+      var serial = registers.get(Constants.serialNumber);
 
       //Extract the serial number as the identifier for the device
-      return {success: true, deviceId: "device serial number"};
+      return {
+        success: true, 
+        deviceId: serial, 
+        deviceSettings: {modbushost: data.host, modbusport: data.port, modbusunitid: data.unitId}
+      };
     });
-  }
-
-  private _toWholeNumber(x: any): number{
-    var result = Number(x);
-
-    return result >= 0 ? Math.floor(result): Math.ceil(result);
   }
 };

@@ -16,7 +16,7 @@ module.exports = class InverterDevice extends Homey.Device {
    * onAdded is called when the user adds the device, called just after pairing.
    */
   async onAdded() {
-    this.log('InverterDevice has been added');
+    this.log(`InverterDevice with ${this.getData().id} has been added`);
   }
 
   /**
@@ -52,7 +52,7 @@ module.exports = class InverterDevice extends Homey.Device {
    * onDeleted is called when the user deleted the device.
    */
   async onDeleted() {
-    this.log('InverterDevice has been deleted');
+    this.log(`InverterDevice with ${this.getData().id} has been removed`);
   }
 
 };

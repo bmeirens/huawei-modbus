@@ -1,5 +1,11 @@
 export default class Constants{
-    HOST_KEY = 'modbushost';
-    PORT_KEY = 'modbusport';
-    UNIT_KEY = 'modbusunitid';
+    static readonly hostKey = 'modbushost';
+    static readonly portKey = 'modbusport';
+    static readonly unitKey = 'modbusunitid';
+
+    static readonly inverterReadingsKey = 'inverter';
+    static readonly meterReadingsKey = 'meter';
+    static readonly batteryReadingsKey = 'battery';
+
+    static readonly serialNumber = 'serialNumber';
 };

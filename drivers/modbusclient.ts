@@ -1,8 +1,11 @@
 import * as Modbus from 'jsmodbus';
 import net from 'net';
 import Homey, { Device } from 'homey';
+import ModbusClientSettings from './modbusClientSettings';
+import Reading from './reading';
+import RegisterEntry from './registerEntry';
+import Constants from './constants';
 
-const EMPTY_IP = '0.0.0.0';
 const CALL_INTERVAL = 120_000;
 const CONNECTION_TIMEOUT = 50;
 const TCP_CONNECTION_TIMEOUT = 3500;
@@ -14,158 +17,74 @@ const UINT32_TYPE = 'UINT32';
 const INT16_TYPE = 'INT16';
 const INT32_TYPE = 'INT32';
 
-class Entry{
-    public constructor(start: number, length: number, type: string, label: string, unit: string, factor?: number){
-        this.start = start;
-        this.length = length;
-        this.type = type;
-        this.label = label;
-        this.unit = unit;
-        this.factor = factor ?? 1;
-    }
-
-    start: number;
-    length: number;
-    type: string;
-    label: string;
-    unit: string;
-    value!: string;
-    factor: number;
-
-    public updateMeasurement(value: string)
-    {
-        this.value = value;
-    }
-
-    public formattedValue(): string
-    {
-        var defaultResult = `${this.value}${this.unit}`
-        if(this.factor == 1) return defaultResult;
-
-        var numericValue = Number(this.value);
-        if(Number.isNaN(numericValue) || this.factor == 0)
-        {
-            return defaultResult;
-        }
-
-        var scaledValue = numericValue / this.factor;
-        return `${scaledValue}${this.unit}`
-    }
-}
-
 class Registers
 {
-    inverterRegisters: Object = {
-        modelName: new Entry(30000, 15, STRING_TYPE, 'Model Name', ''),
-        serialNumber: new Entry(30015, 10, STRING_TYPE, 'Serial Number', ''),
-        pvStringsCount: new Entry(30071, 1, UINT16_TYPE, 'Number of PV Strings', ''),
-        ratedPower: new Entry(30073, 2, UINT32_TYPE, 'Rated Power', 'kW', 1000),
-        pv1Voltage: new Entry(32016, 1, INT16_TYPE, 'PV1 Voltage', 'V', 10),
-        pv1Current: new Entry(32017, 1, INT16_TYPE, 'PV1 Current', 'A', 100),
-        pv2Voltage: new Entry(32018, 1, INT16_TYPE, 'PV2 Voltage', 'V', 10),
-        pv2Current: new Entry(32019, 1, INT16_TYPE, 'PV2 Current', 'A', 100),
-        dcPower: new Entry(32064, 2, INT32_TYPE, 'DC Power', 'kW', 1000),
-        gridVoltage: new Entry(32066, 1, UINT16_TYPE, 'Grid Voltage', 'V', 10),
-        gridVoltagePhaseA: new Entry(32069, 1, UINT16_TYPE, 'Grid Phase A Voltage', 'V', 10),
-        gridVoltagePhaseB: new Entry(32070, 1, UINT16_TYPE, 'Grid Phase B Voltage', 'V', 10),
-        gridVoltagePhaseC: new Entry(32071, 1, UINT16_TYPE, 'Grid Phase C Voltage', 'V', 10),
-        gridCurrentPhaseA: new Entry(32072, 2, INT32_TYPE, 'Grid Phase A Current', 'A', 1000),
-        gridCurrentPhaseB: new Entry(32074, 2, INT32_TYPE, 'Grid Phase B Current', 'A', 1000),
-        gridCurrentPhaseC: new Entry(32076, 2, INT32_TYPE, 'Grid Phase C Current', 'A', 1000),
-        activePowerPeakDay: new Entry(32078, 2, INT32_TYPE, 'Current Day Active Power Peak', 'kW', 1000),
-        activePower: new Entry(32080, 2, INT32_TYPE, 'Active Power', 'kW', 1000),
-        gridFrequency: new Entry(32085, 1, UINT16_TYPE, 'Grid Frequency', 'Hz', 100),
-        internalTemperature: new Entry(32087, 1, INT16_TYPE, 'Internal Temperature', '°C', 10),
-        deviceStatus: new Entry(32089, 1, INT16_TYPE, 'Device Status', ''),
-        totalPowerGenerated: new Entry(32106, 2, UINT32_TYPE, 'Total Power Generated', 'kWh', 100),
-        currentHourPowerGenerated: new Entry(32112, 2, UINT32_TYPE, 'Power Generated This Hour', 'kWh', 100),
-        currentDayPowerGenerated: new Entry(32114, 2, UINT32_TYPE, 'Power Generated Today', 'kWh', 100),
-        previousHourPowerGenerated: new Entry(32158, 2, UINT32_TYPE, 'Power Generated Previous Hour', 'kWh', 100),
-        previousDayPowerGenerated: new Entry(32162, 2, UINT32_TYPE, 'Power Generated Yesterday', 'kWh', 100),
-    };
-    batteryRegisters : Object = {
-        ratedCapacity: new Entry(37758, 2, UINT32_TYPE, 'Rated Capacity', 'Wh'),
-        batterySOC: new Entry(37760, 1, UINT16_TYPE, 'Battery SOC', '%', 10),
-        deviceStatus: new Entry(37762, 1, UINT16_TYPE, 'Device Status', ''),//0 offline, 1 standby, 2 running, 3 fault, 4 sleep
-        busVoltage: new Entry(37763, 1, UINT16_TYPE, 'Bus Voltage', 'V', 10),
-        busCurrent: new Entry(37764, 1, INT16_TYPE, 'Bus Current', 'A', 10),
-        chargeDischargePower: new Entry(37765, 2, INT32_TYPE, 'Charge / Discharge Power', 'W'),
-        totalCharge: new Entry(37780, 2, UINT32_TYPE, 'Total Charge', 'kWh', 100),
-        totalDischarge: new Entry(37782, 2, UINT32_TYPE, 'Total Discharge', 'kWh', 100),
-        currentDayCharged: new Entry(37784, 2, UINT32_TYPE, 'Charged Today', 'kWh', 100),
-        currentDayDischarged: new Entry(37786, 2, UINT32_TYPE, 'Discharged Today', 'kWh', 100),
-        maximumChargePower: new Entry(37046, 2, UINT32_TYPE, 'Maximum Charge Power', 'W'),
-        maximumDischargePower: new Entry(37048, 2, UINT32_TYPE, 'Maximum Discharge Power', 'W'),        
-    };
-    meterRegisters: Object=  {
-        gridVoltagePhaseA: new Entry(37101, 2, INT32_TYPE, 'Grid Phase A Voltage', 'V', 10),
-        gridVoltagePhaseB: new Entry(37103, 2, INT32_TYPE, 'Grid Phase B Voltage', 'V', 10),
-        gridVoltagePhaseC: new Entry(37105, 2, INT32_TYPE, 'Grid Phase C Voltage', 'V', 10),
-        gridCurrentPhaseA: new Entry(37107, 2, INT32_TYPE, 'Grid Phase A Current', 'A', 100),
-        gridCurrentPhaseB: new Entry(37109, 2, INT32_TYPE, 'Grid Phase B Current', 'A', 100),
-        gridCurrentPhaseC: new Entry(37111, 2, INT32_TYPE, 'Grid Phase C Current', 'A', 100),
-        activePower: new Entry(37113, 2, INT32_TYPE, 'Active Power', 'W'),//positive to grid ; negative from grid
-        gridFrequency: new Entry(37118, 1, INT16_TYPE, 'Grid Frequency', 'Hz', 100),
-        gridExportedEnergy: new Entry(37119, 2, INT32_TYPE, 'Grid Exported Energy', 'kWh', 100),
-        gridImportedEnergy: new Entry(37121, 2, INT32_TYPE, 'Grid Imported Energy', 'kWh', 100),
-        activePowerPhaseA: new Entry(37132, 2, INT32_TYPE, 'Grid Phase A Active Power', 'W'),
-        activePowerPhaseB: new Entry(37134, 2, INT32_TYPE, 'Grid Phase B Active Power', 'W'),
-        activePowerPhaseC: new Entry(37136, 2, INT32_TYPE, 'Grid Phase C Active Power', 'W')
-    };
-}
+    inverterRegisters: Map<string, RegisterEntry> = new Map<string, RegisterEntry>([
+        ['modelName', new RegisterEntry(30000, 15, STRING_TYPE, 'Model Name', '')],
+        [Constants.serialNumber, new RegisterEntry(30015, 10, STRING_TYPE, 'Serial Number', '')],
+        ['pvStringsCount', new RegisterEntry(30071, 1, UINT16_TYPE, 'Number of PV Strings', '')],
+        ['ratedPower', new RegisterEntry(30073, 2, UINT32_TYPE, 'Rated Power', 'kW', 1000)],
+        ['pv1Voltage', new RegisterEntry(32016, 1, INT16_TYPE, 'PV1 Voltage', 'V', 10)],
+        ['pv1Current', new RegisterEntry(32017, 1, INT16_TYPE, 'PV1 Current', 'A', 100)],
+        ['pv2Voltage', new RegisterEntry(32018, 1, INT16_TYPE, 'PV2 Voltage', 'V', 10)],
+        ['pv2Current', new RegisterEntry(32019, 1, INT16_TYPE, 'PV2 Current', 'A', 100)],
+        ['dcPower', new RegisterEntry(32064, 2, INT32_TYPE, 'DC Power', 'kW', 1000)],
+        ['gridVoltage', new RegisterEntry(32066, 1, UINT16_TYPE, 'Grid Voltage', 'V', 10)],
+        ['gridVoltagePhaseA', new RegisterEntry(32069, 1, UINT16_TYPE, 'Grid Phase A Voltage', 'V', 10)],
+        ['gridVoltagePhaseB', new RegisterEntry(32070, 1, UINT16_TYPE, 'Grid Phase B Voltage', 'V', 10)],
+        ['gridVoltagePhaseC', new RegisterEntry(32071, 1, UINT16_TYPE, 'Grid Phase C Voltage', 'V', 10)],
+        ['gridCurrentPhaseA', new RegisterEntry(32072, 2, INT32_TYPE, 'Grid Phase A Current', 'A', 1000)],
+        ['gridCurrentPhaseB', new RegisterEntry(32074, 2, INT32_TYPE, 'Grid Phase B Current', 'A', 1000)],
+        ['gridCurrentPhaseC', new RegisterEntry(32076, 2, INT32_TYPE, 'Grid Phase C Current', 'A', 1000)],
+        ['activePowerPeakDay', new RegisterEntry(32078, 2, INT32_TYPE, 'Current Day Active Power Peak', 'kW', 1000)],
+        ['activePower', new RegisterEntry(32080, 2, INT32_TYPE, 'Active Power', 'kW', 1000)],
+        ['gridFrequency', new RegisterEntry(32085, 1, UINT16_TYPE, 'Grid Frequency', 'Hz', 100)],
+        ['internalTemperature', new RegisterEntry(32087, 1, INT16_TYPE, 'Internal Temperature', '°C', 10)],
+        ['deviceStatus', new RegisterEntry(32089, 1, INT16_TYPE, 'Device Status', '')],
+        ['totalPowerGenerated', new RegisterEntry(32106, 2, UINT32_TYPE, 'Total Power Generated', 'kWh', 100)],
+        ['currentHourPowerGenerated', new RegisterEntry(32112, 2, UINT32_TYPE, 'Power Generated This Hour', 'kWh', 100)],
+        ['currentDayPowerGenerated', new RegisterEntry(32114, 2, UINT32_TYPE, 'Power Generated Today', 'kWh', 100)],
+        ['previousHourPowerGenerated', new RegisterEntry(32158, 2, UINT32_TYPE, 'Power Generated Previous Hour', 'kWh', 100)],
+        ['previousDayPowerGenerated', new RegisterEntry(32162, 2, UINT32_TYPE, 'Power Generated Yesterday', 'kWh', 100)],
+    ]);
 
-export class ModbusClientSettings{
-    host: string;
-    port: number;
-    unitId: number;
+    batteryRegisters : Map<string, RegisterEntry> = new Map<string, RegisterEntry>([
+        ['ratedCapacity', new RegisterEntry(37758, 2, UINT32_TYPE, 'Rated Capacity', 'Wh')],
+        ['batterySOC', new RegisterEntry(37760, 1, UINT16_TYPE, 'Battery SOC', '%', 10)],
+        ['deviceStatus', new RegisterEntry(37762, 1, UINT16_TYPE, 'Device Status', '')],//0 offline, 1 standby, 2 running, 3 fault, 4 sleep
+        ['busVoltage', new RegisterEntry(37763, 1, UINT16_TYPE, 'Bus Voltage', 'V', 10)],
+        ['busCurrent', new RegisterEntry(37764, 1, INT16_TYPE, 'Bus Current', 'A', 10)],
+        ['chargeDischargePower', new RegisterEntry(37765, 2, INT32_TYPE, 'Charge / Discharge Power', 'W')],
+        ['totalCharge', new RegisterEntry(37780, 2, UINT32_TYPE, 'Total Charge', 'kWh', 100)],
+        ['totalDischarge', new RegisterEntry(37782, 2, UINT32_TYPE, 'Total Discharge', 'kWh', 100)],
+        ['currentDayCharged', new RegisterEntry(37784, 2, UINT32_TYPE, 'Charged Today', 'kWh', 100)],
+        ['currentDayDischarged', new RegisterEntry(37786, 2, UINT32_TYPE, 'Discharged Today', 'kWh', 100)],
+        ['maximumChargePower', new RegisterEntry(37046, 2, UINT32_TYPE, 'Maximum Charge Power', 'W')],
+        ['maximumDischargePower', new RegisterEntry(37048, 2, UINT32_TYPE, 'Maximum Discharge Power', 'W')],        
+    ]);
 
-    static Empty(): ModbusClientSettings{
-        return new ModbusClientSettings(EMPTY_IP, 502, 1);
-    }
-
-    public constructor(host: string, port: number, unitId: number){
-        this.host = host;
-        this.port = port;
-        this.unitId = unitId;
-    }
-
-    public isValid(): boolean {
-        if(this.host == EMPTY_IP || this.host == '')
-        {
-            return false;
-        }
-        
-        if(!this._checkIp(this.host))
-        {
-            return false;
-        }
-
-        if(this.port < 0)
-            return false;
-
-        if(this.unitId < 0 || this.unitId > 50)
-            return false;
-
-        return true;
-    }
-
-    public toClientKey() : string {
-       return `${this.host}:${this.port}/${this.unitId}`;
-    }
-
-    private _checkIp(ip: string) : boolean {
-        const ipv4 = 
-            /^(\d{1,3}\.){3}\d{1,3}$/;
-        const ipv6 = 
-            /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-        return ipv4.test(ip) || ipv6.test(ip);
-    }
+    meterRegisters: Map<string, RegisterEntry> = new Map<string, RegisterEntry>([
+        ['gridVoltagePhaseA', new RegisterEntry(37101, 2, INT32_TYPE, 'Grid Phase A Voltage', 'V', 10)],
+        ['gridVoltagePhaseB', new RegisterEntry(37103, 2, INT32_TYPE, 'Grid Phase B Voltage', 'V', 10)],
+        ['gridVoltagePhaseC', new RegisterEntry(37105, 2, INT32_TYPE, 'Grid Phase C Voltage', 'V', 10)],
+        ['gridCurrentPhaseA', new RegisterEntry(37107, 2, INT32_TYPE, 'Grid Phase A Current', 'A', 100)],
+        ['gridCurrentPhaseB', new RegisterEntry(37109, 2, INT32_TYPE, 'Grid Phase B Current', 'A', 100)],
+        ['gridCurrentPhaseC', new RegisterEntry(37111, 2, INT32_TYPE, 'Grid Phase C Current', 'A', 100)],
+        ['activePower', new RegisterEntry(37113, 2, INT32_TYPE, 'Active Power', 'W')],//positive to grid ; negative from grid
+        ['gridFrequency', new RegisterEntry(37118, 1, INT16_TYPE, 'Grid Frequency', 'Hz', 100)],
+        ['gridExportedEnergy', new RegisterEntry(37119, 2, INT32_TYPE, 'Grid Exported Energy', 'kWh', 100)],
+        ['gridImportedEnergy', new RegisterEntry(37121, 2, INT32_TYPE, 'Grid Imported Energy', 'kWh', 100)],
+        ['activePowerPhaseA', new RegisterEntry(37132, 2, INT32_TYPE, 'Grid Phase A Active Power', 'W')],
+        ['activePowerPhaseB', new RegisterEntry(37134, 2, INT32_TYPE, 'Grid Phase B Active Power', 'W')],
+        ['activePowerPhaseC', new RegisterEntry(37136, 2, INT32_TYPE, 'Grid Phase C Active Power', 'W')]
+    ]);
 }
 
 export default class ModbusClient{
   timer!: NodeJS.Timeout;
   settings: ModbusClientSettings;
   registers: Registers;
+  readings!: Map<string, Map<string, Reading>>;
 
     private static _instances = new Map<string, ModbusClient>();
 
@@ -176,10 +95,10 @@ export default class ModbusClient{
 
         this.timer = setInterval(() => {
             // poll state from modbus
-            this._poll();
+            this._poll().then((value) => {this.readings = value;});
         }, CALL_INTERVAL);
 
-        this._poll();
+        this._poll().then((value) => { this.readings = value;});
     }
 
     public static async canConnect(settings: ModbusClientSettings) : Promise<boolean> {
@@ -249,9 +168,15 @@ export default class ModbusClient{
             });
     }
 
-    public getRegisters(section: string): string {
+    public getRegisters(section: string): Map<string, Reading> {
         console.log(`Retrival of registers for section ${section}`);
-        return section;
+
+        if(this.readings !== undefined && this.readings.has(section))
+        {
+            return this.readings.get(section)!;
+        }
+
+        return new Map<string, Reading>();
     }
 
     private static _createConnectionOptions(settings: ModbusClientSettings, label: string) {
@@ -269,64 +194,78 @@ export default class ModbusClient{
         return modbusOptions;
     }
 
-
-    private async _poll(): Promise<void>{
+    private async _poll(): Promise<Map<string, Map<string, Reading>>>{
         console.log('polling....');
 
-        var modbusOptions = ModbusClient._createConnectionOptions(this.settings, 'Huawei Modbus Client');
+        var pollResult = await new Promise<Map<string, Map<string, Reading>>>((resolve, reject) => {
 
-        const socket = new net.Socket();
-        const unitID = this.settings.unitId;
-        const client = new Modbus.client.TCP(socket, unitID, TCP_CONNECTION_TIMEOUT);
-        
-        socket.setKeepAlive(false);
-        socket.connect(modbusOptions);
+            var modbusOptions = ModbusClient._createConnectionOptions(this.settings, 'Huawei Modbus Client');
 
-        socket.on('connect', async () => {
-            console.log('Connected ...');
+            const socket = new net.Socket();
+            const unitID = this.settings.unitId;
+            const client = new Modbus.client.TCP(socket, unitID, TCP_CONNECTION_TIMEOUT);
+            
+            socket.setKeepAlive(false);
+            socket.connect(modbusOptions);
 
-            console.log(modbusOptions);
-            const startTime = new Date();
+            socket.on('connect', async () => {
+                console.log('Connected ...');
 
-            await this._delay(DELAY_AFTER_CONNECTION_ESTABLISHED);
+                let result = new Map<string, Map<string, Reading>>();
 
-            //TODO: get all values for inverter, battery and meter
-            await this._checkRegisters(this.registers.inverterRegisters, client);
-            await this._checkRegisters(this.registers.meterRegisters, client);
-            await this._checkRegisters(this.registers.batteryRegisters, client);
+                console.log(modbusOptions);
+                const startTime = new Date();
 
-            console.log('disconnect');
+                await this._delay(DELAY_AFTER_CONNECTION_ESTABLISHED);
 
-            client.socket.end();
-            socket.end();
+                //get all values for inverter, battery and meter
+                var inverterReadings = await this._checkRegisters(this.registers.inverterRegisters, client);
+                var meterReadings = await this._checkRegisters(this.registers.meterRegisters, client);
+                var batteryReadings = await this._checkRegisters(this.registers.batteryRegisters, client);
 
-            //TODO: pass the results onto any reactive observers as key value pairs [string, string]
+                //set any result collections
+                result.set(Constants.inverterReadingsKey, inverterReadings);
+                result.set(Constants.meterReadingsKey, meterReadings);
+                result.set(Constants.batteryReadingsKey, batteryReadings);
 
-            const endTime = new Date();
-            const timeDiff = endTime.getTime() - startTime.getTime();
-            const seconds = Math.floor(timeDiff / 1000);
+                console.log('disconnect');
 
-            console.log(`total time spent: ${seconds} seconds`);
+                client.socket.end();
+                socket.end();
+                const endTime = new Date();
+                const timeDiff = endTime.getTime() - startTime.getTime();
+                const seconds = Math.floor(timeDiff / 1000);
+
+                console.log(`total time spent: ${seconds} seconds`);
+
+                resolve(result);
+            });
+
+            socket.on('close', () => {
+                console.log('Client closed');
+            });
+
+            socket.on('timeout', () => {
+                console.log('socket timed out');
+
+                client.socket.end();
+                socket.end();
+
+                reject('socket timed out');
+            });
+
+            socket.on('error', (err) => {
+                console.log('connection error');
+                console.log(err);
+
+                client.socket.end();
+                socket.end();
+
+                reject('connection error');
+            });
         });
 
-        socket.on('close', () => {
-            console.log('Client closed');
-        });
-
-        socket.on('timeout', () => {
-            console.log('socket timed out');
-
-            client.socket.end();
-            socket.end();
-        });
-
-        socket.on('error', (err) => {
-            console.log('connection error');
-            console.log(err);
-
-            client.socket.end();
-            socket.end();
-        });
+        return pollResult;
     }
 
     teardown(){
@@ -342,9 +281,10 @@ export default class ModbusClient{
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    private async _checkRegisters(registers: Object, client: InstanceType<typeof Modbus.client.TCP>): Promise<void>{
-        for (const [key, entry] of Object.entries(registers)) {
-             
+    private async _checkRegisters(registers: Map<string, RegisterEntry>, client: InstanceType<typeof Modbus.client.TCP>): Promise<Map<string, Reading>>{
+        let result = new Map<string, Reading>();
+
+        registers.forEach(async (entry: RegisterEntry, key: string) => {
             await this._delay(DELAY_BETWEEN_REGISTER_READS);
 
             try {
@@ -376,16 +316,23 @@ export default class ModbusClient{
                     break;
                 }
 
+                var reading = Reading.FromEntry(entry);
+
                 //console.log(response.body);
                 if(resultValue && resultValue !== undefined && resultValue !== 'xxx')
                 {
-                    entry.updateMeasurement(resultValue);
-                    console.log(`${key} measurement is ${entry.formattedValue()}`);
+                    reading.updateMeasurement(resultValue);
+                    console.log(`${key} measurement is ${reading.formattedValue()}`);
                 }
+
+                result.set(key, reading);
+
             } catch (err) {
                 console.log(`error with key: ${key}`);
                 console.log(err);
             }
-        }
+        });
+
+        return result;
     }
 }
